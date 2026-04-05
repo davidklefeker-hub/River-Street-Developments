@@ -10,12 +10,13 @@
  *   ## Demolition
  *   - Remove existing cabinets
  *   - Remove countertops
- *   - Remove flooring in kitchen area
+ *   ![](photos/demo-before.jpg)
+ *   https://app.companycam.com/photos/abc123.jpg
  *
  *   ## Electrical
  *   - Run new circuits for island
  *   - Install recessed lighting (12 cans)
- *   - Add dedicated outlet for dishwasher
+ *   ![Panel location](photos/panel.png)
  *
  *   ## Notes
  *   Budget is $45,000. Target completion: 6 weeks.
@@ -24,17 +25,29 @@
  *   - Project name from the first "Project:" line or the filename
  *   - Sections (## headings) become parent tasks
  *   - Bullet items under sections become subtasks
+ *   - Image references (markdown images, URLs, local paths) per section → attached to parent task
  *   - A "Notes" section is attached as a description, not tasks
  */
 
 const NOTES_SECTIONS = ['notes', 'note', 'comments', 'comment', 'budget', 'timeline'];
+
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.bmp', '.tiff', '.tif'];
+
+// Matches markdown image syntax: ![alt](path/url)
+const MD_IMAGE_RE = /^!\[([^\]]*)\]\(([^)]+)\)\s*$/;
+
+// Matches a bare URL pointing to an image
+const URL_IMAGE_RE = /^(https?:\/\/\S+)$/i;
+
+// Matches a local file path to an image (e.g. photos/demo.jpg, ./img/pic.png)
+const LOCAL_IMAGE_RE = /^([./\\]?[\w./\\-]+\.(?:jpg|jpeg|png|gif|webp|heic|heif|bmp|tiff|tif))\s*$/i;
 
 /**
  * Parse a CompanyCam document string into a structured project with tasks.
  *
  * @param {string} content - Raw document text
  * @param {string} filename - Original filename (fallback for project name)
- * @returns {{ projectName: string, notes: string, tasks: Array<{ name: string, subtasks: string[] }> }}
+ * @returns {{ projectName: string, notes: string, tasks: Array<{ name: string, subtasks: string[], images: Array<{ src: string, alt: string }> }> }}
  */
 export function parseDocument(content, filename = 'Untitled Project') {
   const lines = content.split('\n');
@@ -52,6 +65,7 @@ export function parseDocument(content, filename = 'Untitled Project') {
       tasks.push({
         name: section.heading,
         subtasks: section.items.filter((item) => item.trim().length > 0),
+        images: section.images || [],
       });
     }
   }
@@ -60,10 +74,10 @@ export function parseDocument(content, filename = 'Untitled Project') {
   if (tasks.length === 0 && notes === '') {
     const standaloneItems = lines
       .map((l) => l.replace(/^[-*•]\s*/, '').trim())
-      .filter((l) => l.length > 0 && !isProjectLine(l));
+      .filter((l) => l.length > 0 && !isProjectLine(l) && !parseImageRef(l));
 
     for (const item of standaloneItems) {
-      tasks.push({ name: item, subtasks: [] });
+      tasks.push({ name: item, subtasks: [], images: [] });
     }
   }
 
@@ -98,6 +112,39 @@ function isNotesSection(heading) {
 }
 
 /**
+ * Check if a line is an image reference.
+ * Returns { src, alt } if it is, null otherwise.
+ */
+function parseImageRef(line) {
+  const trimmed = line.trim();
+
+  // Markdown image: ![alt](src)
+  const mdMatch = trimmed.match(MD_IMAGE_RE);
+  if (mdMatch) {
+    return { alt: mdMatch[1] || '', src: mdMatch[2] };
+  }
+
+  // Bare URL to an image
+  const urlMatch = trimmed.match(URL_IMAGE_RE);
+  if (urlMatch) {
+    const url = urlMatch[1];
+    const hasImageExt = IMAGE_EXTENSIONS.some((ext) => url.toLowerCase().includes(ext));
+    const isCompanyCam = url.includes('companycam.com');
+    if (hasImageExt || isCompanyCam) {
+      return { alt: '', src: url };
+    }
+  }
+
+  // Local file path to an image
+  const localMatch = trimmed.match(LOCAL_IMAGE_RE);
+  if (localMatch) {
+    return { alt: '', src: localMatch[1] };
+  }
+
+  return null;
+}
+
+/**
  * Extract sections from document lines.
  * A section starts with a heading (## or **Bold** on its own line)
  * and contains bullet items below it.
@@ -113,11 +160,18 @@ function extractSections(lines) {
       if (currentSection) {
         sections.push(currentSection);
       }
-      currentSection = { heading, items: [] };
+      currentSection = { heading, items: [], images: [] };
       continue;
     }
 
     if (currentSection) {
+      // Check for image reference first
+      const imageRef = parseImageRef(line);
+      if (imageRef) {
+        currentSection.images.push(imageRef);
+        continue;
+      }
+
       const item = parseBulletItem(line);
       if (item) {
         currentSection.items.push(item);
@@ -172,3 +226,5 @@ function parseBulletItem(line) {
   const match = trimmed.match(/^(?:[-*•]|\d+[.)]\s)\s*(.+)/);
   return match ? match[1].trim() : null;
 }
+
+export { parseImageRef as _parseImageRef };

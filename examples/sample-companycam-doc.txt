@@ -5,17 +5,21 @@ Project: 742 Evergreen Terrace - Kitchen & Bath Remodel
 - Demo bathroom tile and fixtures
 - Remove flooring in kitchen and both bathrooms
 - Haul debris (schedule dumpster)
+![Kitchen before demo](photos/kitchen-before.jpg)
+![Bathroom before demo](photos/bath-before.jpg)
 
 ## Framing
 - Frame new kitchen island location
 - Reframe bathroom doorway (widen to 32")
 - Add blocking for wall-mount TV above fireplace
+photos/framing-layout.png
 
 ## Plumbing
 - Rough-in new kitchen island sink
 - Relocate dishwasher supply/drain
 - Install new shower valve (master bath)
 - Add second vanity drain (hall bath)
+![Existing plumbing](photos/plumbing-existing.jpg)
 
 ## Electrical
 - Run 20A dedicated circuit for island
@@ -23,6 +27,8 @@ Project: 742 Evergreen Terrace - Kitchen & Bath Remodel
 - Install recessed lighting - master bath (4 cans)
 - Add GFCI outlets at all countertop locations
 - Wire for under-cabinet LED strips
+![Panel location](photos/electrical-panel.jpg)
+![Lighting plan](photos/lighting-plan.png)
 
 ## Drywall & Paint
 - Patch and skim coat all affected walls
@@ -36,12 +42,14 @@ Project: 742 Evergreen Terrace - Kitchen & Bath Remodel
 - Template countertops after cabinet install
 - Install quartz countertops
 - Install bathroom vanities (master + hall)
+![Cabinet layout](photos/cabinet-layout.jpg)
 
 ## Tile & Flooring
 - Install subway tile backsplash in kitchen
 - Tile master bath shower (floor to ceiling)
 - Install LVP flooring throughout kitchen
 - Install hex tile on bathroom floors
+![Tile selections](photos/tile-samples.jpg)
 
 ## Fixtures & Trim
 - Install all plumbing fixtures (faucets, drains, shower head)

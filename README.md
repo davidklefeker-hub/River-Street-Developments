@@ -1,6 +1,6 @@
 # River Street Developments — CompanyCam → Asana Pipeline
 
-Automatically converts CompanyCam project documents into structured Asana tasks and subtasks.
+Automatically converts CompanyCam project documents into structured Asana tasks and subtasks, with photo attachments.
 
 ## How It Works
 
@@ -73,11 +73,14 @@ Project: 123 Main Street - Kitchen Renovation
 - Remove existing cabinets
 - Remove countertops
 - Remove flooring in kitchen area
+![Kitchen before demo](photos/kitchen-before.jpg)
 
 ## Electrical
 - Run new circuits for island
 - Install recessed lighting (12 cans)
 - Add dedicated outlet for dishwasher
+![Panel location](photos/panel.jpg)
+https://app.companycam.com/photos/abc123.jpg
 
 ## Plumbing
 - Rough-in island sink
@@ -94,7 +97,24 @@ Budget is $45,000. Target completion: 6 weeks.
 | `Project: ...` line | Project name (matched or created) |
 | `## Section` heading | Parent task |
 | `- Bullet item` under a section | Subtask of that task |
+| Image references in a section | Attached to the parent task |
 | `## Notes` section | Attached as notes, not tasks |
+
+### Supported image formats
+
+Images within a section are attached to that section's parent task in Asana. Three reference styles are supported:
+
+| Style | Example |
+|---|---|
+| Markdown image | `![Description](photos/before.jpg)` |
+| Image URL | `https://app.companycam.com/photos/abc123.jpg` |
+| Local file path | `photos/kitchen-before.jpg` |
+
+**Local images:** Drop the image files into the `incoming/` folder alongside your document. Use relative paths in the document (e.g., `photos/before.jpg`). After processing, both the document and referenced images are moved to `processed/`.
+
+**CompanyCam URLs:** Any URL containing `companycam.com` is treated as a photo, even without an image file extension. These are attached as external links on the Asana task.
+
+Supported image types: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.heic`, `.heif`, `.bmp`, `.tiff`
 
 ### Supported heading styles
 

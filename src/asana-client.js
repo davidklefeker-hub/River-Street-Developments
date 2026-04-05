@@ -5,14 +5,17 @@
  *   - Find or create a project by name
  *   - Create tasks with assignee and followers
  *   - Create subtasks under parent tasks
+ *   - Attach images (local files or URLs) to tasks
  */
 
+import { readFile } from 'fs/promises';
+import { basename } from 'path';
 import { config } from './config.js';
 
 const BASE_URL = 'https://app.asana.com/api/1.0';
 
 /**
- * Make an authenticated request to the Asana API.
+ * Make an authenticated JSON request to the Asana API.
  */
 async function asanaRequest(path, options = {}) {
   const url = `${BASE_URL}${path}`;
@@ -122,4 +125,123 @@ export async function createSubtask(parentTaskGid, subtaskName) {
 
   console.log(`      Created subtask: "${subtask.name}"`);
   return subtask;
+}
+
+/**
+ * Attach an image to a task.
+ *
+ * Supports two modes:
+ *   - URL: passes the URL to Asana to fetch externally
+ *   - Local file: reads the file and uploads via multipart form data
+ *
+ * @param {string} taskGid - The task to attach the image to
+ * @param {string} src - URL or local file path
+ * @param {string} [alt=''] - Optional name/description for the attachment
+ * @param {string} [docDir=''] - Base directory to resolve relative file paths
+ */
+export async function attachImageToTask(taskGid, src, alt = '', docDir = '') {
+  const isUrl = /^https?:\/\//i.test(src);
+
+  if (isUrl) {
+    await attachUrlToTask(taskGid, src, alt);
+  } else {
+    await attachFileToTask(taskGid, src, alt, docDir);
+  }
+}
+
+/**
+ * Attach an image via external URL.
+ */
+async function attachUrlToTask(taskGid, url, name) {
+  const attachmentName = name || filenameFromUrl(url);
+
+  const response = await fetch(`${BASE_URL}/tasks/${taskGid}/attachments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.asana.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      data: {
+        resource_subtype: 'external',
+        url: url,
+        name: attachmentName,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Asana attachment error ${response.status}: ${body}`);
+  }
+
+  console.log(`      Attached image (URL): ${attachmentName}`);
+}
+
+/**
+ * Attach a local image file via multipart upload.
+ */
+async function attachFileToTask(taskGid, filePath, name, docDir) {
+  const { resolve } = await import('path');
+  const { stat } = await import('fs/promises');
+
+  // Resolve relative paths against the document's directory
+  const resolvedPath = resolve(docDir || '.', filePath);
+
+  // Check the file exists
+  try {
+    await stat(resolvedPath);
+  } catch {
+    console.warn(`      Skipping missing image: ${resolvedPath}`);
+    return;
+  }
+
+  const fileData = await readFile(resolvedPath);
+  const fileName = name || basename(resolvedPath);
+
+  // Build multipart form
+  const blob = new Blob([fileData], { type: guessMimeType(resolvedPath) });
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
+
+  const response = await fetch(`${BASE_URL}/tasks/${taskGid}/attachments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.asana.accessToken}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Asana file upload error ${response.status}: ${body}`);
+  }
+
+  console.log(`      Attached image (file): ${fileName}`);
+}
+
+function filenameFromUrl(url) {
+  try {
+    const pathname = new URL(url).pathname;
+    return basename(pathname) || 'image';
+  } catch {
+    return 'image';
+  }
+}
+
+function guessMimeType(filePath) {
+  const ext = filePath.toLowerCase().split('.').pop();
+  const types = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+    bmp: 'image/bmp',
+    tiff: 'image/tiff',
+    tif: 'image/tiff',
+  };
+  return types[ext] || 'application/octet-stream';
 }

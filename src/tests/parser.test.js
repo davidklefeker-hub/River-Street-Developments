@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDocument } from '../parser.js';
+import { parseDocument, _parseImageRef } from '../parser.js';
 
 describe('parseDocument', () => {
   it('extracts project name from "Project:" line', () => {
@@ -121,5 +121,126 @@ Budget is $85,000.`;
     assert.equal(result.tasks[0].subtasks.length, 2);
     assert.equal(result.tasks[1].subtasks.length, 1);
     assert.ok(result.notes.includes('$85,000'));
+  });
+});
+
+describe('image parsing', () => {
+  it('extracts markdown image references from sections', () => {
+    const doc = `Project: Image Test
+
+## Demolition
+- Remove cabinets
+![Before photo](photos/before.jpg)
+![](photos/overview.png)`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].images.length, 2);
+    assert.equal(result.tasks[0].images[0].src, 'photos/before.jpg');
+    assert.equal(result.tasks[0].images[0].alt, 'Before photo');
+    assert.equal(result.tasks[0].images[1].src, 'photos/overview.png');
+    assert.equal(result.tasks[0].images[1].alt, '');
+  });
+
+  it('extracts URL image references', () => {
+    const doc = `Project: URL Test
+
+## Electrical
+- Wire outlets
+https://app.companycam.com/photos/abc123.jpg`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].images.length, 1);
+    assert.equal(result.tasks[0].images[0].src, 'https://app.companycam.com/photos/abc123.jpg');
+  });
+
+  it('extracts CompanyCam URLs without image extension', () => {
+    const doc = `Project: CompanyCam Test
+
+## Plumbing
+- Fix pipes
+https://app.companycam.com/photos/12345`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].images.length, 1);
+    assert.equal(result.tasks[0].images[0].src, 'https://app.companycam.com/photos/12345');
+  });
+
+  it('extracts local file path image references', () => {
+    const doc = `Project: Local Test
+
+## Framing
+- Build walls
+photos/framing-layout.png`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].images.length, 1);
+    assert.equal(result.tasks[0].images[0].src, 'photos/framing-layout.png');
+  });
+
+  it('does not treat images as subtasks', () => {
+    const doc = `Project: Mixed Test
+
+## Demo
+- Remove walls
+- Haul debris
+![Photo](demo.jpg)
+photos/another.png`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].subtasks.length, 2);
+    assert.equal(result.tasks[0].images.length, 2);
+  });
+
+  it('associates images with correct parent sections', () => {
+    const doc = `Project: Multi Section
+
+## Demolition
+- Remove cabinets
+![Demo photo](demo.jpg)
+
+## Electrical
+- Run circuits
+![Panel](panel.jpg)
+![Wiring](wiring.png)`;
+
+    const result = parseDocument(doc);
+    assert.equal(result.tasks[0].images.length, 1);
+    assert.equal(result.tasks[0].images[0].src, 'demo.jpg');
+    assert.equal(result.tasks[1].images.length, 2);
+    assert.equal(result.tasks[1].images[0].src, 'panel.jpg');
+    assert.equal(result.tasks[1].images[1].src, 'wiring.png');
+  });
+
+  it('returns empty images array when no images in section', () => {
+    const doc = `Project: No Images
+
+## Framing
+- Build walls`;
+
+    const result = parseDocument(doc);
+    assert.deepEqual(result.tasks[0].images, []);
+  });
+});
+
+describe('_parseImageRef', () => {
+  it('parses markdown image syntax', () => {
+    const ref = _parseImageRef('![Alt text](path/to/image.jpg)');
+    assert.deepEqual(ref, { alt: 'Alt text', src: 'path/to/image.jpg' });
+  });
+
+  it('parses bare image URL', () => {
+    const ref = _parseImageRef('https://example.com/photo.png');
+    assert.deepEqual(ref, { alt: '', src: 'https://example.com/photo.png' });
+  });
+
+  it('parses local file path', () => {
+    const ref = _parseImageRef('photos/demo.jpg');
+    assert.deepEqual(ref, { alt: '', src: 'photos/demo.jpg' });
+  });
+
+  it('returns null for non-image lines', () => {
+    assert.equal(_parseImageRef('- Remove cabinets'), null);
+    assert.equal(_parseImageRef('Just some text'), null);
+    assert.equal(_parseImageRef('## Heading'), null);
   });
 });
