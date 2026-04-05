@@ -1,0 +1,21 @@
+{
+  "name": "river-street-developments",
+  "version": "1.0.0",
+  "description": "CompanyCam → Claude → Asana integration pipeline for River Street Developments",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "watch": "node src/watcher.js",
+    "process": "node src/process-document.js",
+    "test": "node --test src/tests/"
+  },
+  "dependencies": {
+    "asana": "^3.0.0",
+    "chokidar": "^3.6.0",
+    "dotenv": "^16.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
