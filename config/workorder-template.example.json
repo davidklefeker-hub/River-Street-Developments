@@ -1,0 +1,11 @@
+{
+  "Title": "{{summary}}",
+  "Description": "{{description}}",
+  "Category": "{{category}}",
+  "Priority": "{{priority}}",
+  "UnitNumber": "{{unit}}",
+  "PropertyName": "{{property}}",
+  "ReportedBy": "{{reportedBy}}",
+  "Photos": "{{photoUrls}}",
+  "SourceUrl": "{{projectUrl}}"
+}

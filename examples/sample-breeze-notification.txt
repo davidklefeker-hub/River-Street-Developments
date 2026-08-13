@@ -1,0 +1,24 @@
+Subject: Work Order #1042 - River Street Apartments Unit 2B - Plumbing
+From: noreply@yardibreeze.com
+To: maintenance@kenwoodequitygroup.com
+Date: Wed, 4 Mar 2026 08:14:22 -0500
+
+A new work order has been created and assigned.
+
+Work Order #: 1042
+Property: River Street Apartments
+Unit: 2B
+Address: 12 River St, Troy, NY 12180
+Category: Plumbing
+Priority: High
+Status: New
+Tenant: Dana Reyes
+Phone: 518-555-0134
+Permission to Enter: Yes
+Date Created: 2026-03-04
+Due Date: 2026-03-05
+Assigned To: Josh
+
+Description: Kitchen faucet is leaking steadily under the sink. Water is pooling in the cabinet and has started to swell the particle board. Tenant has placed a bucket underneath.
+
+Please do not reply to this message. Log in to the portal to update the work order.

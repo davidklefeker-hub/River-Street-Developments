@@ -3,3 +3,5 @@ node_modules/
 incoming/
 processed/
 *.log
+outbox/
+.workorder-state.json

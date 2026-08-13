@@ -1,19 +1,27 @@
 {
   "name": "river-street-developments",
   "version": "1.0.0",
-  "description": "CompanyCam → Claude → Asana integration pipeline for River Street Developments",
+  "description": "Work order loop between a property management platform and CompanyCam, plus the CompanyCam → Asana document pipeline",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "watch": "node src/watcher.js",
     "process": "node src/process-document.js",
-    "test": "node --test src/tests/"
+    "wo": "node src/workorders/cli.js",
+    "wo:doctor": "node src/workorders/cli.js doctor",
+    "wo:import": "node src/workorders/cli.js import",
+    "wo:poll": "node src/workorders/cli.js poll",
+    "wo:watch": "node src/workorders/cli.js watch",
+    "wo:webhook": "node src/workorders/webhook-server.js",
+    "wo:webhook:register": "node src/workorders/cli.js register-webhook",
+    "test": "node --test \"src/tests/**/*.test.js\""
   },
   "dependencies": {
     "asana": "^3.0.0",
     "chokidar": "^3.6.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "nodemailer": "^9.0.5"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,4 +1,23 @@
-# River Street Developments — CompanyCam → Asana Pipeline
+# River Street Developments
+
+Two pipelines share this repo:
+
+1. **[The work order loop](docs/workorder-loop/README.md)** — property management
+   platform ↔ CompanyCam. Work orders flow out to the crew's phones; damage the
+   crew photographs flows back as a new work order. Start here.
+2. **CompanyCam → Asana** (below) — turns a CompanyCam project document into
+   Asana tasks and subtasks with photo attachments.
+
+```bash
+npm install
+cp .env.example .env
+npm run wo:doctor     # work order loop: check credentials, tags, sink
+npm start             # Asana pipeline: watch incoming/ for documents
+```
+
+---
+
+## CompanyCam → Asana Pipeline
 
 Automatically converts CompanyCam project documents into structured Asana tasks and subtasks, with photo attachments.
 
